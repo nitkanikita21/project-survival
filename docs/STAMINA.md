@@ -16,4 +16,4 @@ While player is sprinting, the `stamina_remaining` decreases until it reaches ze
 
 When the `stamina_remaining` is zero and player is trying to sprint, he gets slowness effect for specific amount of time.
 
-While the `stamina_remaining` is less than the `stamina_time`, the `stamina_remaining` increases according to the `stamina_recovery` rate.
+When the `stamina_remaining` is less than the `stamina_time`, the `stamina_remaining` increases according to the `stamina_recovery` rate.
