@@ -21,6 +21,8 @@ repositories {
     // for more information about repositories.
 
     maven("https://maven.nucleoid.xyz")
+    mavenCentral()
+
 }
 
 fabricApi {
@@ -40,7 +42,6 @@ dependencies {
     modImplementation("eu.pb4:polymer-core:${project.findProperty("polymer_api_version")}")
     modImplementation("eu.pb4:polymer-blocks:${project.findProperty("polymer_api_version")}")
     modImplementation("eu.pb4:polymer-resource-pack:${project.findProperty("polymer_api_version")}")
-
     implementation("org.kodein.di:kodein-di:7.19.0")
 }
 
