@@ -1,11 +1,11 @@
-package com.projectsurvival.config.core
+package com.projectsurvival.serializing
 
 import com.google.gson.Gson
 import com.google.gson.GsonBuilder
 import com.google.gson.JsonElement
 import com.mojang.serialization.DynamicOps
 import com.mojang.serialization.JsonOps
-import com.projectsurvival.config.configs.TestConfig
+import com.projectsurvival.configs.TestConfig
 import net.fabricmc.loader.api.FabricLoader
 import net.minecraft.nbt.NbtIo
 import net.minecraft.nbt.NbtOps
@@ -31,7 +31,7 @@ class ConfigLoader(
         }
     }
 
-    inline fun <reified C : Config<C>> readConfig(path: String, rwIO: ConfigRWComparator<C>): C {
+    inline fun <reified C : CodecSerializable<C>> readConfig(path: String, rwIO: ConfigRWComparator<C>): C {
         val path = Paths.get(FabricLoader.getInstance().configDir.absolutePathString(), path)
 
         println(path.absolutePathString())
@@ -79,7 +79,7 @@ class ConfigLoader(
         return loaded
     }
 
-    inline fun <reified C : Config<C>> readToDI(diBuilder: DI.Builder, path: String, rwIO: ConfigRWComparator<C>) {
+    inline fun <reified C : CodecSerializable<C>> readToDI(diBuilder: DI.Builder, path: String, rwIO: ConfigRWComparator<C>) {
         diBuilder.apply {
             val config = readConfig(path, rwIO)
             bindSingleton(Path(path).nameWithoutExtension) {
@@ -90,12 +90,12 @@ class ConfigLoader(
 }
 
 
-interface ConfigRWComparator<C : Config<C>> {
+interface ConfigRWComparator<C : CodecSerializable<C>> {
     fun <E> read(ops: DynamicOps<E>, source: E, registryAccess: DynamicRegistryManager.Immutable? = null): C?
     fun <E> write(ops: DynamicOps<E>, data: C, registryAccess: DynamicRegistryManager.Immutable? = null): E?
 }
 
-inline fun <reified C : Config<C>> createConfigIO(): ConfigRWComparator<C> {
+inline fun <reified C : CodecSerializable<C>> createConfigIO(): ConfigRWComparator<C> {
     return object : ConfigRWComparator<C> {
         override fun <E> read(ops: DynamicOps<E>, source: E, registryAccess: DynamicRegistryManager.Immutable?): C? {
             val ops2 = if (registryAccess != null) {
@@ -103,7 +103,7 @@ inline fun <reified C : Config<C>> createConfigIO(): ConfigRWComparator<C> {
             } else {
                 ops
             }
-            return (C::class.companionObjectInstance as Config.CodecProvider<C>).decode(ops2, source, registryAccess)
+            return (C::class.companionObjectInstance as CodecSerializable.CodecProvider<C>).decode(ops2, source, registryAccess)
         }
 
         override fun <E> write(ops: DynamicOps<E>, data: C, registryAccess: DynamicRegistryManager.Immutable?): E? {

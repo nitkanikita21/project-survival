@@ -1,16 +1,14 @@
-package com.projectsurvival.config.core
+package com.projectsurvival.serializing
 
-import com.google.gson.JsonElement
 import com.mojang.serialization.Codec
 import com.mojang.serialization.DynamicOps
-import com.mojang.serialization.JsonOps
 import net.minecraft.registry.DynamicRegistryManager
 import net.minecraft.registry.RegistryOps
 import kotlin.jvm.optionals.getOrNull
 import kotlin.reflect.full.companionObjectInstance
 
-interface Config<C : Config<C>> {
-    interface CodecProvider<C : Config<C>> {
+interface CodecSerializable<C : CodecSerializable<C>> {
+    interface CodecProvider<C : CodecSerializable<C>> {
         val CODEC: Codec<C>
 
         fun <E> decode(
