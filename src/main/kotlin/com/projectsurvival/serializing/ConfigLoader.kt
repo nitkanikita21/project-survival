@@ -1,6 +1,7 @@
 package com.projectsurvival.serializing
 
 import com.google.gson.Gson
+import com.google.gson.GsonBuilder
 import com.google.gson.JsonElement
 import com.mojang.serialization.DynamicOps
 import com.mojang.serialization.JsonOps
@@ -13,46 +14,40 @@ import net.minecraft.registry.RegistryOps
 import org.kodein.di.DI
 import org.kodein.di.bindSingleton
 import java.io.DataOutputStream
-import java.nio.file.Path
-import java.nio.file.Paths
+import java.io.File
 import kotlin.io.path.*
 import kotlin.reflect.full.companionObjectInstance
 import kotlin.reflect.full.primaryConstructor
 
 class ConfigLoader(
-    val configDirectory: Path,
+    val configDirectory: File,
     val registryAccess: DynamicRegistryManager.Immutable
 ) {
-    val gson = Gson()
-    fun getDI(): DI.Module {
-        return DI.Module(name = "Configs") {
-            readToDI(this, "test.json", createConfigIO<TestConfig>())
-        }
-    }
+    val gson: Gson = GsonBuilder().setPrettyPrinting().create()
 
-    inline fun <reified C : CodecSerializable<C>> readConfig(path: String, rwIO: ConfigRWComparator<C>): C {
-        val path = Paths.get(FabricLoader.getInstance().configDir.absolutePathString(), path)
+    inline fun <reified C : CodecSerializable<C>> loadConfig(path: String, rwIO: ConfigRWComparator<C>): C {
+        val file = File(FabricLoader.getInstance().configDir.absolutePathString(), path)
 
-        println(path.absolutePathString())
+        println(file.absolutePath)
 
-        if (!path.exists()) {
+        if (!file.exists()) {
             val defaultConfig = C::class.primaryConstructor!!.callBy(emptyMap())
-            path.createFile()
-            when (path.extension) {
+            file.createNewFile()
+            when (file.extension) {
                 "json" -> {
-                    path.writeText(gson.toJson(rwIO.write(JsonOps.INSTANCE, defaultConfig, registryAccess)))
+                    file.writeText(gson.toJson(rwIO.write(JsonOps.INSTANCE, defaultConfig, registryAccess)))
 
                 }
 
                 "nbt" -> {
                     NbtIo.write(
                         rwIO.write(NbtOps.INSTANCE, defaultConfig, registryAccess),
-                        DataOutputStream(path.outputStream())
+                        DataOutputStream(file.outputStream())
                     )
                 }
 
                 else -> {
-                    throw RuntimeException("Unsuported file type for config ${path.absolutePathString()}")
+                    throw RuntimeException("Unsuported file type for config ${file.absolutePath}")
                 }
             }
 
@@ -60,27 +55,27 @@ class ConfigLoader(
         }
 
 
-        val loaded: C? = when (path.extension) {
+        val loaded: C? = when (file.extension) {
             "json" -> {
-                rwIO.read(JsonOps.INSTANCE, gson.fromJson(path.reader(), JsonElement::class.java), registryAccess)
+                rwIO.read(JsonOps.INSTANCE, gson.fromJson(file.reader(), JsonElement::class.java), registryAccess)
             }
 
             "nbt" -> {
-                rwIO.read(NbtOps.INSTANCE, NbtIo.read(path), registryAccess)
+                rwIO.read(NbtOps.INSTANCE, NbtIo.read(file.toPath()), registryAccess)
             }
 
             else -> {
-                throw RuntimeException("Unsuported file type for config ${path.absolutePathString()}")
+                throw RuntimeException("Unsuported file type for config ${file.absolutePath}")
             }
         }
 
-        if (loaded == null) throw RuntimeException("Failed to load config ${path.absolutePathString()}")
+        if (loaded == null) throw RuntimeException("Failed to load config ${file.absolutePath}")
         return loaded
     }
 
     inline fun <reified C : CodecSerializable<C>> readToDI(diBuilder: DI.Builder, path: String, rwIO: ConfigRWComparator<C>) {
         diBuilder.apply {
-            val config = readConfig(path, rwIO)
+            val config = loadConfig(path, rwIO)
             bindSingleton(Path(path).nameWithoutExtension) {
                 config
             }
