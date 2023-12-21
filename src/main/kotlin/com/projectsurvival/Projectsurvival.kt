@@ -1,7 +1,7 @@
 package com.projectsurvival
 
-import com.projectsurvival.config.configs.TestConfig
-import com.projectsurvival.config.core.ConfigLoader
+import com.projectsurvival.configs.TestConfig
+import com.projectsurvival.serializing.ConfigLoader
 import net.fabricmc.api.ModInitializer
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents
 import net.fabricmc.loader.api.FabricLoader
@@ -9,7 +9,6 @@ import net.minecraft.server.MinecraftServer
 import org.kodein.di.DI
 import org.kodein.di.instance
 import org.slf4j.LoggerFactory
-import java.io.File
 import java.nio.file.Paths
 import kotlin.io.path.absolutePathString
 

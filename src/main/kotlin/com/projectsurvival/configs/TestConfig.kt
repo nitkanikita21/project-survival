@@ -1,9 +1,8 @@
-package com.projectsurvival.config.configs
+package com.projectsurvival.configs
 
 import com.mojang.serialization.Codec
 import com.mojang.serialization.codecs.RecordCodecBuilder
-import com.projectsurvival.config.core.Config
-import net.minecraft.block.Block
+import com.projectsurvival.serializing.CodecSerializable
 import net.minecraft.block.BlockState
 import net.minecraft.block.Blocks
 import net.minecraft.item.ItemStack
@@ -16,8 +15,8 @@ data class TestConfig(
     val uuid: UUID = UUID.randomUUID(),
     val itemStack: ItemStack = ItemStack.EMPTY,
     val blockState: BlockState = Blocks.AIR.defaultState
-): Config<TestConfig> {
-    companion object: Config.CodecProvider<TestConfig> {
+): CodecSerializable<TestConfig> {
+    companion object: CodecSerializable.CodecProvider<TestConfig> {
         override val CODEC: Codec<TestConfig> = RecordCodecBuilder.create { instance ->
             return@create instance.group(
                 Codec.INT.fieldOf("number").forGetter(TestConfig::number),
