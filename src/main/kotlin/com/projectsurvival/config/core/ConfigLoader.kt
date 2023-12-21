@@ -1,6 +1,7 @@
 package com.projectsurvival.config.core
 
 import com.google.gson.Gson
+import com.google.gson.GsonBuilder
 import com.google.gson.JsonElement
 import com.mojang.serialization.DynamicOps
 import com.mojang.serialization.JsonOps
@@ -23,7 +24,7 @@ class ConfigLoader(
     val configDirectory: Path,
     val registryAccess: DynamicRegistryManager.Immutable
 ) {
-    val gson = Gson()
+    val gson = GsonBuilder().setPrettyPrinting().create()
     fun getDI(): DI.Module {
         return DI.Module(name = "Configs") {
             readToDI(this, "test.json", createConfigIO<TestConfig>())
