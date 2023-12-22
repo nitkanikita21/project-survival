@@ -10,7 +10,7 @@ Stamina - amount of time that player can perform stamina-dependant actions like 
 - `stamina_remaining` - amount of remaining stamina time.
 - `stamina_recovery` - rate of stamina recovery.
 - `stamina_recovery_block` - flag that indicates whether to block stamina recovery.
-- `stamina_slowness` - amount of time when player slowed down.
+- `stamina_slowness` - amount of time the player is slowed down.
 
 ## System
 
