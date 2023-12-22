@@ -6,6 +6,7 @@ import net.minecraft.entity.Entity;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtElement;
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
@@ -15,6 +16,11 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 public class EntityDataSaverMixin implements IEntityDataSaver {
     private NbtCompound persistNbtData;
 
+    @Override
+    public boolean project_survival$hasData(String key) {
+        if (persistNbtData == null) persistNbtData = new NbtCompound();
+        return persistNbtData.contains(key);
+    }
 
     @Override
     public NbtElement project_survival$getData(String key) {

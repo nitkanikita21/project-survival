@@ -7,6 +7,11 @@ import com.projectsurvival.Projectsurvival
 import com.projectsurvival.extensions.getData
 import com.projectsurvival.extensions.getNbtCompoundData
 import com.projectsurvival.extensions.setData
+import com.projectsurvival.extensions.setNbtData
+import com.projectsurvival.leveling.PlayerSkill.Events.SkillLevelUpEvent
+import net.fabricmc.fabric.api.event.Event
+import net.fabricmc.fabric.api.event.EventFactory
+import net.minecraft.nbt.NbtCompound
 import net.minecraft.registry.Registry
 import net.minecraft.registry.RegistryKey
 import net.minecraft.registry.SimpleRegistry
@@ -15,9 +20,28 @@ import net.minecraft.util.Identifier
 import kotlin.math.abs
 import kotlin.reflect.full.primaryConstructor
 
+
 class PlayerSkill(
     val properties: Properties
 ) {
+    object Events {
+        fun interface SkillLevelUpEvent {
+            companion object {
+                val EVENT: Event<SkillLevelUpEvent> = EventFactory.createArrayBacked(
+                    SkillLevelUpEvent::class.java
+                ) l@{ listeners ->
+                    SkillLevelUpEvent { serverPlayerEntity, playerSkill, data ->
+                        listeners.forEach {
+                            it.callback(serverPlayerEntity, playerSkill, data)
+                        }
+                    }
+                }
+            }
+
+            fun callback(player: ServerPlayerEntity, skill: PlayerSkill, data: Data)
+        }
+    }
+
     companion object {
         private val NBT_KEY_SKILLS_INFO = "skills"
 
@@ -34,10 +58,10 @@ class PlayerSkill(
             PlayerSkill(
                 Properties(
                     maxLevel = 12,
-                    baseExpGrowth = 120.0,
-                    expGrowthModifier = 1.2,
-                    baseMaxExpAmount = 1000.0,
-                    maxExpAmountModifier = 1.6
+                    baseExpGrowth = 100.0,
+                    expGrowthModifier = 1.0,
+                    baseMaxExpAmount = 200.0,
+                    maxExpAmountModifier = 1.0
                 )
             )
         )
@@ -64,8 +88,8 @@ class PlayerSkill(
     }
 
     data class Data(
-        var currentLevel: Int,
-        var currentExpAmount: Double
+        var currentLevel: Int = 0,
+        var currentExpAmount: Double = 0.0
     ) {
         companion object {
             val CODEC: Codec<PlayerSkill.Data> = RecordCodecBuilder.create { instance ->
@@ -79,17 +103,18 @@ class PlayerSkill(
 
     val id get() = REGISTRY.getId(this)!!
 
-    private fun getData(player: ServerPlayerEntity): Data {
+    fun getData(player: ServerPlayerEntity): Data {
         val nbtCompoundData = player.getNbtCompoundData(NBT_KEY_SKILLS_INFO)
-        return nbtCompoundData.getData(id, Data.CODEC)
+        return nbtCompoundData?.getData(id, Data.CODEC) ?: Data()
     }
 
     private fun setData(player: ServerPlayerEntity, data: Data) {
-        return player.setData(id, Data.CODEC, data)
+        val nbtCompoundData = player.getNbtCompoundData(NBT_KEY_SKILLS_INFO) ?: NbtCompound()
+        nbtCompoundData.setData(id, Data.CODEC, data)
+        player.setNbtData(NBT_KEY_SKILLS_INFO, nbtCompoundData)
     }
 
-    private fun calculateAndWrite(player: ServerPlayerEntity) {
-        val data = getData(player)
+    private fun calculateAndWrite(player: ServerPlayerEntity, data: Data) {
         if (data.currentLevel >= properties.maxLevel) return
         val expNeedForNextLevel =
             properties.baseMaxExpAmount * (properties.maxExpAmountModifier * (data.currentLevel)).coerceIn(
@@ -100,8 +125,9 @@ class PlayerSkill(
             val delta = abs(data.currentExpAmount - expNeedForNextLevel)
             data.currentExpAmount = delta
             data.currentLevel++
-            setData(player, data)
+            Events.SkillLevelUpEvent.EVENT.invoker().callback(player,this, data)
         }
+        setData(player, data)
     }
 
     fun incrementExp(player: ServerPlayerEntity) {
@@ -111,7 +137,10 @@ class PlayerSkill(
             1.0,
             Double.MAX_VALUE
         )
-        setData(player, data)
-        calculateAndWrite(player)
+        calculateAndWrite(player, data)
+
+        player.getData(NBT_KEY_SKILLS_INFO, Codec.unboundedMap(PlayerSkill.CODEC, PlayerSkill.Data.CODEC))
+
+
     }
 }

@@ -1,32 +1,30 @@
 package com.projectsurvival
 
-import com.google.gson.Gson
-import com.google.gson.JsonElement
-import com.mojang.serialization.Codec
-import com.mojang.serialization.JsonOps
+import com.projectsurvival.configs.TestConfig
 import com.projectsurvival.leveling.PlayerSkill
 import com.projectsurvival.serializing.ConfigLoader
+import com.projectsurvival.serializing.createConfigIO
 import net.fabricmc.api.ModInitializer
+import net.fabricmc.fabric.api.entity.event.v1.EntityElytraEvents
+import net.fabricmc.fabric.api.entity.event.v1.ServerLivingEntityEvents
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents
-import net.fabricmc.fabric.api.resource.ResourceManagerHelper
-import net.fabricmc.fabric.api.resource.SimpleSynchronousResourceReloadListener
 import net.fabricmc.loader.api.FabricLoader
 import net.minecraft.registry.DynamicRegistryManager
-import net.minecraft.registry.Registry
-import net.minecraft.resource.Resource
-import net.minecraft.resource.ResourceManager
-import net.minecraft.resource.ResourceType
 import net.minecraft.server.MinecraftServer
-import net.minecraft.util.Identifier
+import net.minecraft.server.network.ServerPlayerEntity
+import net.minecraft.sound.SoundEvents
+import net.minecraft.text.Text
+import net.minecraft.util.ActionResult
 import org.kodein.di.DI
 import org.slf4j.LoggerFactory
+import xyz.nucleoid.stimuli.Stimuli
+import xyz.nucleoid.stimuli.event.player.PlayerChatEvent
 import java.io.File
-import java.io.InputStream
 import kotlin.io.path.absolutePathString
 
 
 object Projectsurvival : ModInitializer {
-    const val ID: String = "project-survival"
+    const val ID: String = "project_survival"
     private val logger = LoggerFactory.getLogger("project-survival")
 
     lateinit var di: DI
@@ -40,16 +38,45 @@ object Projectsurvival : ModInitializer {
 
         ServerLifecycleEvents.SERVER_STARTING.register(::onServerStarting)
         ServerLifecycleEvents.SERVER_STARTED.register(::onServerStarted)
+
+        /*ServerLivingEntityEvents.AFTER_DEATH.register { entity, _ ->
+            if(entity is ServerPlayerEntity) {
+                entity.sendMessage(Text.literal("lvl: ${PlayerSkill.TEST_SKILL.getData(entity).currentLevel}"))
+                entity.sendMessage(Text.literal("exp: ${PlayerSkill.TEST_SKILL.getData(entity).currentExpAmount}"))
+                entity.server.executeSync {
+                    PlayerSkill.TEST_SKILL.incrementExp(entity)
+                }
+            }
+        }*/
+
+        Stimuli.global().listen(PlayerChatEvent.EVENT, PlayerChatEvent l@{ player, message, _ ->
+            player.server.executeSync {
+                PlayerSkill.TEST_SKILL.incrementExp(player)
+            }
+            player.sendMessage(Text.literal("lvl: ${PlayerSkill.TEST_SKILL.getData(player).currentLevel}"))
+            player.sendMessage(Text.literal("exp: ${PlayerSkill.TEST_SKILL.getData(player).currentExpAmount}"))
+            return@l ActionResult.SUCCESS
+        })
+
+        PlayerSkill.Events.SkillLevelUpEvent.EVENT.register { player, skill, data ->
+            player.playSound(
+                SoundEvents.ENTITY_EXPERIENCE_ORB_PICKUP,
+                1f, 1f
+            )
+            player.sendMessage(Text.literal("Level up!"))
+        }
     }
 
     private fun onServerStarting(server: MinecraftServer) {
         logger.info("Starting server")
         registryAccess = server.registryManager
 
-        val module = ConfigLoader(
-            File(FabricLoader.getInstance().configDir.absolutePathString(), "projectsurvival"),
+        val configLoader = ConfigLoader(
+            FabricLoader.getInstance().configDir.toFile(),
             server.registryManager
         )
+
+
 
     }
 
