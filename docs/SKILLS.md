@@ -9,7 +9,7 @@ Skill - a player's skill that he can improve throughout the game until its level
 ### Skill properties
 
 - `maxLevel` - maximum level for this skill
-- `baseExpGrowth` - the base increment exp number of this skill
+- `baseExpGrowth` - the base experience increment number of this skill
 - `expGrowthModifier` - experience gain modifier for each level of this skill
 - `baseMaxExpAmount` - base maximum amount of experience of this skill
 - `maxExpAmountModifier` - a modifier for the maximum experience gain per level of this skill
