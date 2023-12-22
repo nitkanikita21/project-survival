@@ -65,13 +65,13 @@ class PlayerSkill(
 
     data class Data(
         var currentLevel: Int,
-        var currentExpCount: Double
+        var currentExpAmount: Double
     ) {
         companion object {
             val CODEC: Codec<PlayerSkill.Data> = RecordCodecBuilder.create { instance ->
                 return@create instance.group(
                     Codec.INT.fieldOf("currentLevel").forGetter(Data::currentLevel),
-                    Codec.DOUBLE.fieldOf("currentExpCount").forGetter(Data::currentExpCount)
+                    Codec.DOUBLE.fieldOf("currentExpAmount").forGetter(Data::currentExpAmount)
                 ).apply(instance, Data::class.primaryConstructor!!::call)
             }
         }
@@ -96,9 +96,9 @@ class PlayerSkill(
                 1.0,
                 Double.MAX_VALUE
             )
-        if (data.currentExpCount >= expNeedForNextLevel) {
-            val delta = abs(data.currentExpCount - expNeedForNextLevel)
-            data.currentExpCount = delta
+        if (data.currentExpAmount >= expNeedForNextLevel) {
+            val delta = abs(data.currentExpAmount - expNeedForNextLevel)
+            data.currentExpAmount = delta
             data.currentLevel++
             setData(player, data)
         }
@@ -107,7 +107,7 @@ class PlayerSkill(
     fun incrementExp(player: ServerPlayerEntity) {
         val data = getData(player)
         if (data.currentLevel >= properties.maxLevel) return
-        data.currentExpCount += properties.baseExpGrowth * (properties.expGrowthModifier * data.currentLevel).coerceIn(
+        data.currentExpAmount += properties.baseExpGrowth * (properties.expGrowthModifier * data.currentLevel).coerceIn(
             1.0,
             Double.MAX_VALUE
         )
