@@ -91,7 +91,11 @@ class PlayerSkill(
     private fun calculateAndWrite(player: ServerPlayerEntity) {
         val data = getData(player)
         if (data.currentLevel >= properties.maxLevel) return
-        val expNeedForNextLevel = properties.baseMaxExpAmount * (properties.maxExpAmountModifier * (data.currentLevel))
+        val expNeedForNextLevel =
+            properties.baseMaxExpAmount * (properties.maxExpAmountModifier * (data.currentLevel)).coerceIn(
+                1.0,
+                Double.MAX_VALUE
+            )
         if (data.currentExpCount >= expNeedForNextLevel) {
             val delta = abs(data.currentExpCount - expNeedForNextLevel)
             data.currentExpCount = delta
@@ -103,9 +107,11 @@ class PlayerSkill(
     fun incrementExp(player: ServerPlayerEntity) {
         val data = getData(player)
         if (data.currentLevel >= properties.maxLevel) return
-        data.currentExpCount += properties.baseExpGrowth * (properties.expGrowthModifier * data.currentLevel)
+        data.currentExpCount += properties.baseExpGrowth * (properties.expGrowthModifier * data.currentLevel).coerceIn(
+            1.0,
+            Double.MAX_VALUE
+        )
         setData(player, data)
-
         calculateAndWrite(player)
     }
 }
