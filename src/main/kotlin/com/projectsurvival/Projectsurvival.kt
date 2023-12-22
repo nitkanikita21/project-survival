@@ -11,6 +11,7 @@ import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents
 import net.fabricmc.fabric.api.resource.ResourceManagerHelper
 import net.fabricmc.fabric.api.resource.SimpleSynchronousResourceReloadListener
 import net.fabricmc.loader.api.FabricLoader
+import net.minecraft.registry.DynamicRegistryManager
 import net.minecraft.registry.Registry
 import net.minecraft.resource.Resource
 import net.minecraft.resource.ResourceManager
@@ -29,6 +30,7 @@ object Projectsurvival : ModInitializer {
     private val logger = LoggerFactory.getLogger("project-survival")
 
     lateinit var di: DI
+    var registryAccess: DynamicRegistryManager.Immutable? = null
 
     override fun onInitialize() {
         // This code runs as soon as Minecraft is in a mod-load-ready state.
@@ -38,15 +40,11 @@ object Projectsurvival : ModInitializer {
 
         ServerLifecycleEvents.SERVER_STARTING.register(::onServerStarting)
         ServerLifecycleEvents.SERVER_STARTED.register(::onServerStarted)
-        ServerLifecycleEvents.SERVER_STOPPING.register {
-            PlayerSkill.REGISTRY.forEach {
-                logger.info(it.id.toString())
-            }
-        }
     }
 
     private fun onServerStarting(server: MinecraftServer) {
         logger.info("Starting server")
+        registryAccess = server.registryManager
 
         val module = ConfigLoader(
             File(FabricLoader.getInstance().configDir.absolutePathString(), "projectsurvival"),

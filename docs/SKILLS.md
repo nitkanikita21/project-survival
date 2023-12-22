@@ -27,7 +27,7 @@ The skill has constant parameters _(Skill properties)_ and dynamic variables _(S
 
 If an event has occurred that can increase the level of the skill, then the number
 calculated by the formula `baseExpGrowth * (expGrowthModifier * currentLevel)` is added to `currentExpCount`. If after
-adding experience `currentExpCount` is greater than `baseMaxExpCount * (maxExpCountModifier * (currentLevel + 1))` then
+adding experience `currentExpCount` is greater than `baseMaxExpCount * (maxExpCountModifier * (currentLevel))` then
 the
 difference between the numbers is written in `currentExpCount` and `currentLevel` is increased by one
 
