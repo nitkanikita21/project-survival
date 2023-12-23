@@ -14,9 +14,21 @@ Stamina - amount of time that player can perform stamina-dependant actions like 
 
 ## System
 
-While player is sprinting, `stamina_remaining` decreases until it reaches zero.
+### Rules
+1. When player do stamina-dependant action, `stamina_remaining` decreases until it reaches zero.
+2. When `stamina_remaining` is zero, player gets slowness effect for `stamina_slowness` time.
+3. When `stamina_remaining` is less than `stamina_time`, `stamina_remaining` increases according to `stamina_recovery` rate.
+4. When `stamina_recovery_block` flag is active, rule 3 is disabled.
 
-When `stamina_remaining` is zero and player is trying to sprint, he gets slowness effect for `stamina_slowness` time.
+### Flowchart of Sprinting Player
 
-When `stamina_remaining` is less than `stamina_time`, `stamina_remaining` increases according to `stamina_recovery` rate.
-This rule is disabled when `stamina_recovery_block` flag is active.
+```mermaid
+flowchart
+    A[Player sprinting] --> B{Remaining stamina}
+    B -->|Enough| C[Remaining stamina decreases]
+    C --> A
+    B -->|Zero| E[Player slows down]
+    E --> D{Is player still sprinting?}
+    D -->|Yes| E
+    D -->|No| F[Remaining stamina increases]
+```
