@@ -31,5 +31,5 @@ adding experience `currentExpAmount` is greater than `baseMaxExpAmount * (maxExp
 the
 difference between the numbers is written in `currentExpAmount` and `currentLevel` is increased by one
 
-If after calculations `currentLevel >= maxLevel` then currentExpAmountя' is set to zero and further calculations of level
+If after calculations `currentLevel >= maxLevel` then `currentExpAmount` is set to zero and further calculations of level
 and experience for this skill do not take place (because the skill has reached the maximum level)
