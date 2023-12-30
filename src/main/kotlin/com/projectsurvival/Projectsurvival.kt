@@ -20,7 +20,9 @@ import org.slf4j.LoggerFactory
 import xyz.nucleoid.stimuli.Stimuli
 import xyz.nucleoid.stimuli.event.player.PlayerChatEvent
 import java.io.File
+import java.util.Optional
 import kotlin.io.path.absolutePathString
+import kotlin.jvm.optionals.getOrNull
 
 
 object Projectsurvival : ModInitializer {
@@ -31,23 +33,10 @@ object Projectsurvival : ModInitializer {
     var registryAccess: DynamicRegistryManager.Immutable? = null
 
     override fun onInitialize() {
-        // This code runs as soon as Minecraft is in a mod-load-ready state.
-        // However, some things (like resources) may still be uninitialized.
-        // Proceed with mild caution.
         logger.info("Initializing mod")
 
         ServerLifecycleEvents.SERVER_STARTING.register(::onServerStarting)
         ServerLifecycleEvents.SERVER_STARTED.register(::onServerStarted)
-
-        /*ServerLivingEntityEvents.AFTER_DEATH.register { entity, _ ->
-            if(entity is ServerPlayerEntity) {
-                entity.sendMessage(Text.literal("lvl: ${PlayerSkill.TEST_SKILL.getData(entity).currentLevel}"))
-                entity.sendMessage(Text.literal("exp: ${PlayerSkill.TEST_SKILL.getData(entity).currentExpAmount}"))
-                entity.server.executeSync {
-                    PlayerSkill.TEST_SKILL.incrementExp(entity)
-                }
-            }
-        }*/
 
         Stimuli.global().listen(PlayerChatEvent.EVENT, PlayerChatEvent l@{ player, message, _ ->
             player.server.executeSync {
@@ -76,12 +65,9 @@ object Projectsurvival : ModInitializer {
             server.registryManager
         )
 
-
-
     }
 
     private fun onServerStarted(server: MinecraftServer) {
-
         logger.info("Server started successfully")
     }
 }

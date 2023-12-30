@@ -27,8 +27,6 @@ class ConfigLoader(
     inline fun <reified C : CodecSerializable<C>> loadConfig(path: String, rwIO: ConfigRWComparator<C>): C {
         val file = File(configDirectory, path)
 
-        println(file.absolutePath)
-
         if (!file.exists()) {
             val defaultConfig = C::class.primaryConstructor!!.callBy(emptyMap())
             file.createNewFile()
