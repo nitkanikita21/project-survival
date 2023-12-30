@@ -21,6 +21,7 @@ repositories {
     // for more information about repositories.
 
     maven("https://maven.nucleoid.xyz")
+    maven("https://jitpack.io")
     mavenCentral()
 
 }
@@ -42,6 +43,10 @@ dependencies {
     modImplementation("eu.pb4:polymer-core:${project.findProperty("polymer_api_version")}")
     modImplementation("eu.pb4:polymer-blocks:${project.findProperty("polymer_api_version")}")
     modImplementation("eu.pb4:polymer-resource-pack:${project.findProperty("polymer_api_version")}")
+    modImplementation("eu.pb4:placeholder-api:${project.findProperty("placeholder_api_version")}")
+    modImplementation("com.github.DrexHD:message-api:${project.findProperty("message_api_version")}")
+    modImplementation("xyz.nucleoid:stimuli:${project.findProperty("stimuli_api_version")}")
+
     implementation("org.kodein.di:kodein-di:7.19.0")
 }
 

@@ -5,8 +5,6 @@ import com.google.gson.GsonBuilder
 import com.google.gson.JsonElement
 import com.mojang.serialization.DynamicOps
 import com.mojang.serialization.JsonOps
-import com.projectsurvival.configs.TestConfig
-import net.fabricmc.loader.api.FabricLoader
 import net.minecraft.nbt.NbtIo
 import net.minecraft.nbt.NbtOps
 import net.minecraft.registry.DynamicRegistryManager
@@ -15,7 +13,8 @@ import org.kodein.di.DI
 import org.kodein.di.bindSingleton
 import java.io.DataOutputStream
 import java.io.File
-import kotlin.io.path.*
+import kotlin.io.path.Path
+import kotlin.io.path.nameWithoutExtension
 import kotlin.reflect.full.companionObjectInstance
 import kotlin.reflect.full.primaryConstructor
 
@@ -26,7 +25,7 @@ class ConfigLoader(
     val gson: Gson = GsonBuilder().setPrettyPrinting().create()
 
     inline fun <reified C : CodecSerializable<C>> loadConfig(path: String, rwIO: ConfigRWComparator<C>): C {
-        val file = File(FabricLoader.getInstance().configDir.absolutePathString(), path)
+        val file = File(configDirectory, path)
 
         if (!file.exists()) {
             val defaultConfig = C::class.primaryConstructor!!.callBy(emptyMap())
@@ -71,7 +70,11 @@ class ConfigLoader(
         return loaded
     }
 
-    inline fun <reified C : CodecSerializable<C>> readToDI(diBuilder: DI.Builder, path: String, rwIO: ConfigRWComparator<C>) {
+    inline fun <reified C : CodecSerializable<C>> readToDI(
+        diBuilder: DI.Builder,
+        path: String,
+        rwIO: ConfigRWComparator<C>
+    ) {
         diBuilder.apply {
             val config = loadConfig(path, rwIO)
             bindSingleton(Path(path).nameWithoutExtension) {
@@ -95,7 +98,11 @@ inline fun <reified C : CodecSerializable<C>> createConfigIO(): ConfigRWComparat
             } else {
                 ops
             }
-            return (C::class.companionObjectInstance as CodecSerializable.CodecProvider<C>).decode(ops2, source, registryAccess)
+            return (C::class.companionObjectInstance as CodecSerializable.CodecProvider<C>).decode(
+                ops2,
+                source,
+                registryAccess
+            )
         }
 
         override fun <E> write(ops: DynamicOps<E>, data: C, registryAccess: DynamicRegistryManager.Immutable?): E? {

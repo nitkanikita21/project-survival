@@ -22,7 +22,7 @@ interface CodecSerializable<C : CodecSerializable<C>> {
                 ops
             }
 
-            return CODEC.decode(ops2, source).result().get()?.first
+            return CODEC.decode(ops2, source).result().get().first
         }
     }
 
@@ -31,13 +31,15 @@ interface CodecSerializable<C : CodecSerializable<C>> {
     fun <E> encode(
         ops: DynamicOps<E>,
         registryAccess: DynamicRegistryManager.Immutable? = null
-    ): E? {
+    ): E {
         val ops2 = if (registryAccess != null) {
             RegistryOps.of(ops, registryAccess)
         } else {
             ops
         }
 
-        return codec.encode(this as C, ops2, ops2.empty()).result().getOrNull()
+        return codec.encode(this as C, ops2, ops2.empty()).getOrThrow(true) {
+            println(it)
+        }
     }
 }
