@@ -35,6 +35,10 @@ object Projectsurvival : ModInitializer {
     override fun onInitialize() {
         logger.info("Initializing mod")
 
+        BlocksRepository.register()
+        ItemsRepository.register()
+
+
         ServerLifecycleEvents.SERVER_STARTING.register(::onServerStarting)
         ServerLifecycleEvents.SERVER_STARTED.register(::onServerStarted)
 

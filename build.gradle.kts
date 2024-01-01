@@ -47,6 +47,7 @@ dependencies {
     modImplementation("com.github.DrexHD:message-api:${project.findProperty("message_api_version")}")
     modImplementation("xyz.nucleoid:stimuli:${project.findProperty("stimuli_api_version")}")
 
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.8.0-RC2")
     implementation("org.kodein.di:kodein-di:7.19.0")
 }
 
